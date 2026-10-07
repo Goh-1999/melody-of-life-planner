@@ -40,7 +40,7 @@ const CONFIG = {
             "1.0.0",
 
         environment:
-            "development"
+            "production"
 
     },
 
@@ -205,7 +205,7 @@ const CONFIG = {
 const APP_CONFIG = {
 
     ENV:
-        "development",
+        "production",
 
 
     SIMULATION: {
