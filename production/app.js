@@ -655,40 +655,64 @@ function updateRealtimeClockOnly() {
 }
 
 /* =========================================================
-   REALTIME UPDATE
-   ---------------------------------------------------------
-   IMPORTANT
-
-   - Clock ยังเดินทุก 1 วินาที
-   - ขณะ Hover Artist Card:
-       * ไม่ update Artist realtime
-       * ไม่ update Now Playing realtime
-       * ไม่ update Schedule realtime
-   - เมื่อเอาเมาส์ออก:
-       * รอบถัดไปจะ sync สถานะล่าสุด
+   SYNC FESTIVAL DATE WITH REAL TIME
 ========================================================= */
 
-/* =========================================================
-   REALTIME UPDATE
-   ---------------------------------------------------------
-   IMPORTANT
+function syncRealtimeFestivalDate() {
 
-   - Clock อัปเดตทุก 1 วินาที
-   - Artist Card ให้ artists.js จัดการ Hover Protection
-   - Card ที่ Hover จะไม่ถูกแตะ DOM
-   - Now Playing / Schedule อัปเดตตามปกติ
-========================================================= */
+    if (
+        typeof getCurrentFestivalDate !==
+        "function"
+    ) {
 
-/* =========================================================
-   REALTIME UPDATE
-   ---------------------------------------------------------
-   IMPORTANT
+        return false;
 
-   - Clock อัปเดตทุก 1 วินาที
-   - Artist Card อัปเดตเป็นราย Card
-   - Card ที่ Hover จะถูกข้ามโดย artists.js
-   - ไม่ Re-render Lineup ทุก 1 วินาที
-========================================================= */
+    }
+
+
+    const currentFestivalDate =
+        getCurrentFestivalDate();
+
+
+    if (
+        !currentFestivalDate ||
+        !Array.isArray(
+            ALLOWED_DATES
+        ) ||
+        !ALLOWED_DATES.includes(
+            currentFestivalDate
+        )
+    ) {
+
+        return false;
+
+    }
+
+
+    if (
+        selectedDate ===
+        currentFestivalDate
+    ) {
+
+        return false;
+
+    }
+
+
+    selectedDate =
+        currentFestivalDate;
+
+
+    resetRenderSignatures();
+
+
+    RENDER_STATE.filtersRendered =
+        false;
+
+
+    return true;
+
+}
 
 function updateRealtimeUI() {
 
@@ -754,6 +778,10 @@ let realtimeInterval =
    START REALTIME LOOP
 ========================================================= */
 
+/* =========================================================
+   START REALTIME LOOP
+========================================================= */
+
 function startRealtimeLoop() {
 
     if (
@@ -770,14 +798,26 @@ function startRealtimeLoop() {
         window.setInterval(
             () => {
 
-                /*
-                 * Simulation playback
-                 * มี timer ของตัวเอง
-                 */
+                const dateChanged =
+                    syncRealtimeFestivalDate();
+
 
                 if (
-                    simulationPlaying
+                    dateChanged
                 ) {
+
+                    renderApp({
+
+                        transition:
+                            false,
+
+                        force:
+                            true,
+
+                        renderFilters:
+                            true
+
+                    });
 
                     return;
 
@@ -796,7 +836,6 @@ function startRealtimeLoop() {
     );
 
 }
-
 
 /* =========================================================
    STOP REALTIME LOOP
