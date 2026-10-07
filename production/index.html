@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Melody Of Life 17 Planner
+    </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Kanit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- FAVICON -->
+    <link rel="icon" href="favicon.png" type="image/png">
+
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="header">
+
+        <div class="header-brand">
+
+            <h1>
+                Melody Of Life 17 Planner
+            </h1>
+
+            <p>
+                Festival Lineup Planner
+            </p>
+
+            <p class="header-disclaimer">
+                🎵 Fan-made / Unofficial
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             REALTIME
+        ================================================== -->
+
+        <div class="realtime-bar" aria-live="polite">
+
+            <div class="realtime-phase" aria-hidden="true">
+
+                <span id="realtimePhaseIcon" class="realtime-phase-icon">
+                    ☀️
+                </span>
+
+                <span id="realtimePhaseLabel" class="realtime-phase-label">
+                    กลางวัน
+                </span>
+
+            </div>
+
+
+            <div class="realtime-date-wrap">
+
+                <div id="realtimeDate" class="realtime-date">
+                    --
+                </div>
+
+                <div id="realtimeContext" class="realtime-context">
+                    Melody Of Life 17
+                </div>
+
+            </div>
+
+
+            <div id="clock" class="realtime-time">
+                --:--:--
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         RUNNING TEXT
+    ====================================================== -->
+
+    <div class="marquee-wrapper" aria-label="Melody Of Life 17 fan-made planner news ticker">
+
+        <div class="marquee-glow"></div>
+
+        <div class="marquee-track">
+
+            <span class="marquee-accent">
+                💚 คิดถึงกันไหม? 👀 เพราะ MELODY OF LIFE 17 IS BACK!
+            </span>
+
+            <span>
+                🎶 กลับมาครั้งนี้ เตรียมตัวให้พร้อมกับ 3 วันที่จะเต็มไปด้วยเสียงเพลง ความสนุก
+                และโมเมนต์ที่อยากให้มาเจอกัน
+            </span>
+
+            <span>
+                📍 16 - 18 OCTOBER 2026 @ centralwOrld
+            </span>
+
+            <span class="marquee-fanmade">
+                Fan-made Planner • Unofficial
+            </span>
+
+            <span>
+                #MelodyOfLife17
+            </span>
+
+            <span>
+                #MOL17
+            </span>
+
+            <span>
+                #Changเติมเต็มคำว่าเพื่อน
+            </span>
+
+            <span>
+                #SPICYDISC
+            </span>
+
+            <span>
+                #SPICYEVENT
+            </span>
+
+
+            <!-- Duplicate สำหรับทำ Marquee Loop -->
+
+            <span class="marquee-accent">
+                💚 คิดถึงกันไหม? 👀 เพราะ MELODY OF LIFE 17 IS BACK!
+            </span>
+
+            <span>
+                🎶 กลับมาครั้งนี้ เตรียมตัวให้พร้อมกับ 3 วันที่จะเต็มไปด้วยเสียงเพลง ความสนุก
+                และโมเมนต์ที่อยากให้มาเจอกัน
+            </span>
+
+            <span>
+                📍 16 - 18 OCTOBER 2026 @ centralwOrld
+            </span>
+
+            <span class="marquee-fanmade">
+                Fan-made Planner • Unofficial
+            </span>
+
+            <span>
+                #MelodyOfLife17
+            </span>
+
+            <span>
+                #MOL17
+            </span>
+
+            <span>
+                #Changเติมเต็มคำว่าเพื่อน
+            </span>
+
+            <span>
+                #SPICYDISC
+            </span>
+
+            <span>
+                #SPICYEVENT
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="container">
+
+
+        <!-- =================================================
+             DAY FILTER
+        ================================================== -->
+
+        <section class="section">
+
+            <h2>
+                📅 เลือกวัน
+            </h2>
+
+            <div id="dayFilter" class="day-filter"></div>
+
+        </section>
+
+
+        <!-- =================================================
+             STAGE FILTER
+        ================================================== -->
+
+        <section class="section">
+
+            <h2>
+                🎤 เลือกเวที
+            </h2>
+
+            <div id="stageFilter" class="stage-filter"></div>
+
+        </section>
+
+
+        <!-- =================================================
+             LINEUP
+        ================================================== -->
+
+        <section class="section">
+
+            <h2>
+                🎵 Lineup
+            </h2>
+
+            <div class="lineup-source-note">
+
+                ℹ️ รายชื่อศิลปินและตารางการแสดง
+                อ้างอิงจากข้อมูล Official ของงาน
+                เว็บนี้เป็น Fan-made Planner และไม่ได้กำหนดข้อมูลขึ้นเอง
+
+            </div>
+
+            <div id="artistGrid" class="artist-grid"></div>
+
+        </section>
+
+
+        <!-- =================================================
+             NOW PLAYING
+        ================================================== -->
+
+        <section class="section">
+
+            <h2>
+                🔴 Now Playing
+            </h2>
+
+            <div class="nowplaying-warning">
+
+                ⚠️ คำเตือน :
+                ข้อมูล Now Playing อาจคลาดเคลื่อนจากสถานการณ์จริงหน้างาน
+
+            </div>
+
+            <div id="nowPlaying" class="stage-now-grid"></div>
+
+        </section>
+
+
+        <!-- =================================================
+             SCHEDULE
+        ================================================== -->
+
+        <section class="section">
+
+            <h2>
+                📋 Schedule
+            </h2>
+
+
+            <div class="schedule-actions">
+
+                <p id="selectionMessage" class="selection-message">
+                    ยังไม่ได้เลือกศิลปิน
+                </p>
+
+
+                <p id="conflictWarning" class="conflict-warning" role="alert" hidden>
+                </p>
+
+
+                <button id="saveImageButton" class="save-image-button" type="button">
+
+                    🖼️ บันทึกตารางเป็นรูปภาพ
+
+                </button>
+
+
+                <button id="clearSelectionButton" class="clear-selection-button" type="button">
+
+                    ล้างทั้งหมด
+
+                </button>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                วัน
+                            </th>
+
+                            <th>
+                                เวลา
+                            </th>
+
+                            <th>
+                                ศิลปิน
+                            </th>
+
+                            <th>
+                                เวที
+                            </th>
+
+                            <th>
+                                สถานะ
+                            </th>
+
+                            <th>
+                                Progress
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="scheduleBody"></tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer class="site-footer">
+
+        <div class="footer-content">
+
+
+            <h2 class="footer-title">
+                Melody Of Life 17 Planner
+            </h2>
+
+
+            <p class="footer-tagline">
+                ตัวช่วยแพลนดูศิลปินสำหรับแฟนเพลง 🎵
+            </p>
+
+
+            <div class="footer-description">
+
+                <p>
+                    ทำขึ้นโดยแฟนคลับ สำหรับแฟนเพลง
+                    ที่อยากวางแพลนว่าวันไหนจะดูใคร
+                    เวลาไหน และอยู่เวทีไหน
+                </p>
+
+
+                <p>
+                    ข้อมูลอาจมีการเปลี่ยนแปลง
+                    แนะนำให้เช็กข้อมูลล่าสุดจากช่องทาง Official ของงานอีกครั้ง
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 FAN-MADE DISCLAIMER
+            ================================================== -->
+
+            <div class="footer-disclaimer">
+
+                <div class="footer-disclaimer-title">
+                    🎵 Fan-made / Unofficial
+                </div>
+
+                <p>
+                    โปรเจกต์นี้ทำโดยแฟนคลับ เพื่อเป็นตัวช่วยแพลนสำหรับแฟนเพลง
+                    ไม่ใช่เว็บหรือช่องทาง Official ของงาน
+                    และไม่ได้เป็นส่วนหนึ่งของทีมผู้จัดงาน
+                </p>
+
+            </div>
+
+
+            <!-- =================================================
+                 OFFICIAL
+            ================================================== -->
+
+            <div class="footer-section">
+
+                <div class="footer-section-title">
+                    📌 ช่องทาง Official ของงาน
+                </div>
+
+
+                <p class="footer-section-description">
+                    เอาไว้เช็กข่าวสารและข้อมูลล่าสุดของงาน
+                </p>
+
+
+                <a class="footer-facebook" href="https://www.facebook.com/MelodyOfLife.Festival" target="_blank"
+                    rel="noopener noreferrer" aria-label="Official Facebook - Melody Of Life Festival">
+
+                    <span class="footer-facebook-icon">
+                        f
+                    </span>
+
+                    <span>
+                        Melody Of Life Festival
+                    </span>
+
+                </a>
+
+            </div>
+
+
+            <!-- =================================================
+                 CREATOR
+            ================================================== -->
+
+            <div class="footer-section">
+
+                <div class="footer-section-title">
+                    👋 เกี่ยวกับโปรเจกต์
+                </div>
+
+
+                <p class="footer-section-description">
+                    Fan-made by <strong>Goh1999</strong>
+                </p>
+
+
+                <div class="footer-socials">
+
+                    <a href="https://www.facebook.com/goh1999" target="_blank" rel="noopener noreferrer"
+                        aria-label="Facebook - Goh1999">
+
+                        Facebook
+
+                    </a>
+
+
+                    <a href="https://x.com/Goh_Tannarat" target="_blank" rel="noopener noreferrer"
+                        aria-label="X - Goh1999">
+
+                        X
+
+                    </a>
+
+
+                    <a href="https://www.instagram.com/goh_1999/" target="_blank" rel="noopener noreferrer"
+                        aria-label="Instagram - Goh1999">
+
+                        Instagram
+
+                    </a>
+
+
+                    <a href="https://github.com/Goh-1999" target="_blank" rel="noopener noreferrer"
+                        aria-label="GitHub - Goh1999">
+
+                        GitHub
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FOOTER BOTTOM
+            ================================================== -->
+
+            <div class="footer-bottom">
+
+                <p>
+                    © 2026 Melody Of Life 17 Planner
+                </p>
+
+
+                <p>
+                    Fan-made Project · Unofficial
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =====================================================
+         POPUP
+    ====================================================== -->
+
+    <div id="popupOverlay" class="popup-overlay" hidden>
+
+        <div class="popup" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+
+            <div class="popup-icon">
+                ⚠️
+            </div>
+
+
+            <h3 id="popupTitle">
+                แจ้งเตือน
+            </h3>
+
+
+            <p id="popupMessage">
+                -
+            </p>
+
+
+            <button id="popupCloseButton" type="button">
+
+                เข้าใจแล้ว
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CORE
+
+         IMPORTANT:
+         Load order matters.
+    ====================================================== -->
+
+    <script src="../core/config.js"></script>
+
+    <script src="../core/config-runtime.js"></script>
+
+    <script src="../core/state.js"></script>
+
+    <script src="../core/utils.js"></script>
+
+    <script src="../core/artistData.js"></script>
+
+    <script src="../core/data.js"></script>
+
+    <script src="../core/theme.js"></script>
+
+    <script src="../core/filters.js"></script>
+
+    <script src="../core/time.js"></script>
+
+    <script src="../core/status.js"></script>
+
+
+    <!-- =====================================================
+         UI
+    ====================================================== -->
+
+    <script src="../ui/transition.js"></script>
+
+    <script src="../ui/refresh.js"></script>
+
+    <script src="../ui/status.js"></script>
+
+    <script src="../ui/filters.js"></script>
+
+    <script src="../ui/artists.js"></script>
+
+    <script src="../ui/nowPlaying.js"></script>
+
+    <script src="../ui/schedule.js"></script>
+
+    <script src="../ui/conflict.js"></script>
+
+    <script src="../ui/realtime.js"></script>
+
+    <script src="../ui/simulation.js"></script>
+
+    <script src="../ui/export.js"></script>
+
+    <script src="../ui/popup.js"></script>
+
+
+    <!-- =====================================================
+         APP
+    ====================================================== -->
+
+    <script src="../app.js"></script>
+
+</body>
+
+</html>

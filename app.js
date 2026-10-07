@@ -1,0 +1,1364 @@
+/* =========================================================
+   Melody Of Life 17 Planner
+   app.js
+   ========================================================= */
+
+
+/* =========================================================
+   VALIDATE ARTIST DATA
+========================================================= */
+
+function validateArtistData() {
+
+    const artists =
+        getAllArtists();
+
+    let valid =
+        true;
+
+    const ids =
+        new Set();
+
+
+    if (
+        artists.length === 0
+    ) {
+
+        console.error(
+            "❌ ไม่มี Artist Data"
+        );
+
+        return false;
+
+    }
+
+
+    artists.forEach(
+        artist => {
+
+            const id =
+                Number(
+                    artist.id
+                );
+
+
+            /* =================================================
+               ID
+            ================================================= */
+
+            if (
+                !Number.isSafeInteger(
+                    id
+                ) ||
+                id <= 0
+            ) {
+
+                console.error(
+                    "❌ Artist ID ไม่ถูกต้อง:",
+                    artist
+                );
+
+                valid =
+                    false;
+
+            }
+
+
+            if (
+                ids.has(
+                    id
+                )
+            ) {
+
+                console.error(
+                    "❌ Artist ID ซ้ำ:",
+                    artist.id
+                );
+
+                valid =
+                    false;
+
+            }
+
+
+            ids.add(
+                id
+            );
+
+
+            /* =================================================
+               REQUIRED DATA
+            ================================================= */
+
+            if (
+                !artist.name ||
+                !artist.dateISO ||
+                !artist.day ||
+                !artist.stage ||
+                !artist.stageId ||
+                !artist.start ||
+                !artist.end
+            ) {
+
+                console.error(
+                    "❌ Artist Data ไม่ครบ:",
+                    artist
+                );
+
+                valid =
+                    false;
+
+            }
+
+
+            /* =================================================
+               DATE
+            ================================================= */
+
+            if (
+                !isAllowedDate(
+                    artist.dateISO
+                )
+            ) {
+
+                console.error(
+                    "❌ Artist ใช้วันที่นอกเทศกาล:",
+                    artist
+                );
+
+                valid =
+                    false;
+
+            }
+
+
+            /* =================================================
+               TIME
+            ================================================= */
+
+            const start =
+                timeToMinutes(
+                    artist.start
+                );
+
+            const end =
+                timeToMinutes(
+                    artist.end
+                );
+
+
+            if (
+                !Number.isFinite(
+                    start
+                ) ||
+                !Number.isFinite(
+                    end
+                ) ||
+                end <= start
+            ) {
+
+                console.error(
+                    "❌ เวลา Artist ไม่ถูกต้อง:",
+                    artist
+                );
+
+                valid =
+                    false;
+
+            }
+
+
+            /* =================================================
+               STAGE ID
+            ================================================= */
+
+            const stage =
+                getStageById(
+                    artist.stageId
+                );
+
+
+            if (
+                !stage
+            ) {
+
+                console.error(
+                    `❌ Artist "${artist.name}" ` +
+                    `ใช้ StageID "${artist.stageId}" ` +
+                    `ที่ไม่มีใน CONFIG.stages`
+                );
+
+                valid =
+                    false;
+
+            }
+
+        }
+    );
+
+
+    /* =========================================================
+       STAGE CONFIG
+    ========================================================= */
+
+    const stages =
+        getStages();
+
+
+    if (
+        stages.length === 0
+    ) {
+
+        console.error(
+            "❌ CONFIG.stages ว่าง"
+        );
+
+        valid =
+            false;
+
+    }
+
+
+    stages.forEach(
+        stage => {
+
+            if (
+                !stage.color
+            ) {
+
+                console.error(
+                    `❌ Stage ${stage.id} ไม่มีสี`
+                );
+
+                valid =
+                    false;
+
+            }
+
+        }
+    );
+
+
+    return valid;
+
+}
+
+
+/* =========================================================
+   DEBUG STAGE CONFIG
+========================================================= */
+
+function debugStageConfig() {
+
+    console.group(
+        "🎨 Stage Color System"
+    );
+
+
+    console.log(
+        "Stage Color Source:",
+        "CONFIG.stages"
+    );
+
+
+    console.log(
+        "Stage Name Source:",
+        "Excel.Stage"
+    );
+
+
+    getStages().forEach(
+        stage => {
+
+            console.log(
+                `Stage ${stage.id} → ${stage.color}`
+            );
+
+        }
+    );
+
+
+    console.groupEnd();
+
+}
+
+
+/* =========================================================
+   DEBUG SIMULATION
+========================================================= */
+
+function debugSimulationConfig() {
+
+    console.group(
+        "🧪 Simulation"
+    );
+
+
+    console.log(
+        "Environment:",
+        APP_ENV
+    );
+
+
+    console.log(
+        "Enabled:",
+        simulationEnabled
+    );
+
+
+    console.log(
+        "Date:",
+        simulationDate
+    );
+
+
+    console.log(
+        "Time:",
+        simulationTime
+    );
+
+
+    console.log(
+        "Speed:",
+        simulationSpeed
+    );
+
+
+    console.groupEnd();
+
+}
+
+
+/* =========================================================
+   RESET RENDER SIGNATURES
+========================================================= */
+
+function resetRenderSignatures() {
+
+    RENDER_STATE.lastArtistSignature =
+        "";
+
+    RENDER_STATE.lastNowPlayingSignature =
+        "";
+
+    RENDER_STATE.lastScheduleSignature =
+        "";
+
+    RENDER_STATE.lastConflictSignature =
+        "";
+
+}
+
+
+/* =========================================================
+   INITIAL SELECTED DATE
+========================================================= */
+
+function initializeSelectedDate() {
+
+    const festivalStart =
+        FESTIVAL.startDate ||
+        ALLOWED_DATES[0] ||
+        "2026-10-16";
+
+
+    const festivalEnd =
+        FESTIVAL.endDate ||
+        ALLOWED_DATES[
+        ALLOWED_DATES.length - 1
+        ] ||
+        "2026-10-18";
+
+
+    /* =====================================================
+       DEVELOPMENT / TESTER
+    ===================================================== */
+
+    if (
+        simulationEnabled
+    ) {
+
+        selectedDate =
+            festivalStart;
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       PRODUCTION / REAL TIME
+    ===================================================== */
+
+    let currentFestivalDate =
+        null;
+
+
+    if (
+        typeof getCurrentFestivalDate ===
+        "function"
+    ) {
+
+        currentFestivalDate =
+            getCurrentFestivalDate();
+
+    }
+
+
+    if (
+        currentFestivalDate &&
+        Array.isArray(
+            ALLOWED_DATES
+        ) &&
+        ALLOWED_DATES.includes(
+            currentFestivalDate
+        )
+    ) {
+
+        selectedDate =
+            currentFestivalDate;
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       SAFETY FALLBACK
+    ===================================================== */
+
+    const safeDates =
+        Array.isArray(
+            ALLOWED_DATES
+        )
+
+            ? ALLOWED_DATES.filter(
+                Boolean
+            )
+
+            : [];
+
+
+    if (
+        safeDates.includes(
+            festivalStart
+        )
+    ) {
+
+        selectedDate =
+            festivalStart;
+
+        return;
+
+    }
+
+
+    if (
+        safeDates.length > 0
+    ) {
+
+        selectedDate =
+            safeDates[0];
+
+        return;
+
+    }
+
+
+    selectedDate =
+        festivalEnd;
+
+}
+
+
+/* =========================================================
+   TRANSITION TARGETS
+========================================================= */
+
+function getTransitionTargets() {
+
+    const targets =
+        [];
+
+
+    const artistGrid =
+        $("#artistGrid");
+
+
+    const nowPlaying =
+        $("#nowPlaying");
+
+
+    const schedule =
+        $("#scheduleBody");
+
+
+    if (
+        artistGrid
+    ) {
+
+        targets.push(
+            artistGrid
+        );
+
+    }
+
+
+    if (
+        nowPlaying
+    ) {
+
+        targets.push(
+            nowPlaying
+        );
+
+    }
+
+
+    if (
+        schedule
+    ) {
+
+        const wrapper =
+            schedule.closest(
+                ".schedule-container, " +
+                ".schedule-section, " +
+                ".schedule-wrapper, " +
+                ".table-container"
+            );
+
+
+        targets.push(
+            wrapper ||
+            schedule.parentElement ||
+            schedule
+        );
+
+    }
+
+
+    return [
+        ...new Set(
+            targets.filter(
+                Boolean
+            )
+        )
+    ];
+
+}
+
+
+/* =========================================================
+   STATIC RENDER
+========================================================= */
+
+function renderStaticUI(
+    force = false
+) {
+
+    if (
+        force ||
+        !RENDER_STATE.filtersRendered
+    ) {
+
+        renderDayFilter();
+
+        renderStageFilter();
+
+
+        RENDER_STATE.filtersRendered =
+            true;
+
+    }
+
+
+    renderRealtimeWarning();
+
+}
+
+
+/* =========================================================
+   DYNAMIC RENDER
+   ---------------------------------------------------------
+   ใช้ตอน Render จริงเท่านั้น
+   ไม่ใช้ใน realtime loop
+========================================================= */
+
+function renderDynamicUI(
+    force = false
+) {
+
+    updateClock();
+
+
+    renderArtists(
+        force
+    );
+
+
+    renderNowPlaying(
+        force
+    );
+
+
+    renderSchedule(
+        force
+    );
+
+
+    renderConflictWarning();
+
+
+    updateSimulationDisplay();
+
+
+    updateSimulationButtons();
+
+}
+
+
+/* =========================================================
+   MAIN RENDER
+========================================================= */
+
+function renderApp(
+    options = {}
+) {
+
+    const {
+        transition = false,
+        force = false,
+        renderFilters = false
+    } = options;
+
+
+    if (
+        renderFilters
+    ) {
+
+        RENDER_STATE.filtersRendered =
+            false;
+
+    }
+
+
+    renderStaticUI(
+        renderFilters
+    );
+
+
+    renderDynamicUI(
+        force
+    );
+
+
+    if (
+        transition
+    ) {
+
+        requestAnimationFrame(
+            () => {
+
+                playActionTransition(
+                    getTransitionTargets()
+                );
+
+            }
+        );
+
+    }
+
+
+    RENDER_STATE.initialized =
+        true;
+
+}
+
+
+/* =========================================================
+   REFRESH ALL
+========================================================= */
+
+function refreshAll(
+    withTransition = false,
+    renderFilters = false
+) {
+
+    renderApp({
+
+        transition:
+            withTransition,
+
+        force:
+            true,
+
+        renderFilters:
+            renderFilters
+
+    });
+
+}
+
+
+/* =========================================================
+   REALTIME CLOCK
+   ---------------------------------------------------------
+   Clock ยังอัปเดตตามปกติ
+========================================================= */
+
+function updateRealtimeClockOnly() {
+
+    if (
+        typeof updateClock ===
+        "function"
+    ) {
+
+        updateClock();
+
+    }
+
+}
+
+/* =========================================================
+   REALTIME UPDATE
+   ---------------------------------------------------------
+   IMPORTANT
+
+   - Clock ยังเดินทุก 1 วินาที
+   - ขณะ Hover Artist Card:
+       * ไม่ update Artist realtime
+       * ไม่ update Now Playing realtime
+       * ไม่ update Schedule realtime
+   - เมื่อเอาเมาส์ออก:
+       * รอบถัดไปจะ sync สถานะล่าสุด
+========================================================= */
+
+/* =========================================================
+   REALTIME UPDATE
+   ---------------------------------------------------------
+   IMPORTANT
+
+   - Clock อัปเดตทุก 1 วินาที
+   - Artist Card ให้ artists.js จัดการ Hover Protection
+   - Card ที่ Hover จะไม่ถูกแตะ DOM
+   - Now Playing / Schedule อัปเดตตามปกติ
+========================================================= */
+
+/* =========================================================
+   REALTIME UPDATE
+   ---------------------------------------------------------
+   IMPORTANT
+
+   - Clock อัปเดตทุก 1 วินาที
+   - Artist Card อัปเดตเป็นราย Card
+   - Card ที่ Hover จะถูกข้ามโดย artists.js
+   - ไม่ Re-render Lineup ทุก 1 วินาที
+========================================================= */
+
+function updateRealtimeUI() {
+
+    /* =====================================================
+       CLOCK
+    ===================================================== */
+
+    updateRealtimeClockOnly();
+
+    /* =====================================================
+       ARTIST CARDS
+    ===================================================== */
+
+    if (
+        typeof updateArtistCardsRealtimeState ===
+        "function"
+    ) {
+
+        updateArtistCardsRealtimeState();
+
+    }
+
+
+    /* =====================================================
+       NOW PLAYING
+    ===================================================== */
+
+    if (
+        typeof updateNowPlayingRealtime ===
+        "function"
+    ) {
+
+        updateNowPlayingRealtime();
+
+    }
+
+
+    /* =====================================================
+       SCHEDULE
+    ===================================================== */
+
+    if (
+        typeof updateScheduleRealtime ===
+        "function"
+    ) {
+
+        updateScheduleRealtime();
+
+    }
+
+}
+
+
+/* =========================================================
+   REALTIME LOOP
+========================================================= */
+
+let realtimeInterval =
+    null;
+
+
+/* =========================================================
+   START REALTIME LOOP
+========================================================= */
+
+function startRealtimeLoop() {
+
+    if (
+        realtimeInterval !==
+        null
+    ) {
+
+        return;
+
+    }
+
+
+    realtimeInterval =
+        window.setInterval(
+            () => {
+
+                /*
+                 * Simulation playback
+                 * มี timer ของตัวเอง
+                 */
+
+                if (
+                    simulationPlaying
+                ) {
+
+                    return;
+
+                }
+
+
+                updateRealtimeUI();
+
+            },
+            1000
+        );
+
+
+    console.log(
+        "⏱️ Realtime loop started"
+    );
+
+}
+
+
+/* =========================================================
+   STOP REALTIME LOOP
+========================================================= */
+
+function stopRealtimeLoop() {
+
+    if (
+        realtimeInterval ===
+        null
+    ) {
+
+        return;
+
+    }
+
+
+    window.clearInterval(
+        realtimeInterval
+    );
+
+
+    realtimeInterval =
+        null;
+
+
+    console.log(
+        "⏹️ Realtime loop stopped"
+    );
+
+}
+
+
+/* =========================================================
+   EVENTS
+========================================================= */
+
+function setupEvents() {
+
+    /* -----------------------------------------------------
+       SIMULATION APPLY
+    ----------------------------------------------------- */
+
+    $("#applySimulationButton")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                playButtonPress(
+                    event.currentTarget
+                );
+
+
+                applySimulation();
+
+            }
+        );
+
+
+    /* -----------------------------------------------------
+       SIMULATION PLAY
+    ----------------------------------------------------- */
+
+    $("#playSimulationButton")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                playButtonPress(
+                    event.currentTarget
+                );
+
+
+                playSimulation();
+
+            }
+        );
+
+
+    /* -----------------------------------------------------
+       SIMULATION PAUSE
+    ----------------------------------------------------- */
+
+    $("#pauseSimulationButton")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                playButtonPress(
+                    event.currentTarget
+                );
+
+
+                pauseSimulation();
+
+            }
+        );
+
+
+    /* -----------------------------------------------------
+       SIMULATION RESET
+    ----------------------------------------------------- */
+
+    $("#resetSimulationButton")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                playButtonPress(
+                    event.currentTarget
+                );
+
+
+                resetSimulation();
+
+            }
+        );
+
+
+    /* -----------------------------------------------------
+       SIMULATION SPEED
+    ----------------------------------------------------- */
+
+    $("#simulationSpeed")
+        ?.addEventListener(
+            "change",
+            event => {
+
+                changeSimulationSpeed(
+                    event.target.value
+                );
+
+            }
+        );
+
+
+    /* -----------------------------------------------------
+       CLEAR SELECTION
+    ----------------------------------------------------- */
+
+    $("#clearSelectionButton")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                playButtonPress(
+                    event.currentTarget
+                );
+
+
+                clearSelection();
+
+            }
+        );
+
+
+    /* -----------------------------------------------------
+       SAVE IMAGE
+    ----------------------------------------------------- */
+
+    $("#saveImageButton")
+        ?.addEventListener(
+            "click",
+            saveScheduleAsImage
+        );
+
+
+    /* -----------------------------------------------------
+       POPUP
+    ----------------------------------------------------- */
+
+    setupPopupEvents();
+
+}
+
+
+/* =========================================================
+   INITIALIZE SIMULATION INPUTS
+========================================================= */
+
+function initializeSimulationInputs() {
+
+    const dateInput =
+        $("#simulationDate");
+
+
+    if (
+        dateInput
+    ) {
+
+        dateInput.min =
+            FESTIVAL.startDate ||
+            "";
+
+        dateInput.max =
+            FESTIVAL.endDate ||
+            "";
+
+    }
+
+
+    syncSimulationInputs();
+
+}
+
+
+/* =========================================================
+   APPLICATION INITIALIZATION
+========================================================= */
+
+let appInitialized =
+    false;
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async () => {
+
+        /*
+         * Prevent duplicate initialization
+         */
+
+        if (
+            appInitialized
+        ) {
+
+            return;
+
+        }
+
+
+        appInitialized =
+            true;
+
+
+        try {
+
+            /* =================================================
+               WAIT FOR EXCEL
+            ================================================= */
+
+            if (
+                !window.artistDataReady
+            ) {
+
+                throw new Error(
+                    "ไม่พบ window.artistDataReady"
+                );
+
+            }
+
+
+            await window.artistDataReady;
+
+
+            /* =================================================
+               FESTIVAL DATES
+            ================================================= */
+
+            if (
+                !Array.isArray(
+                    ALLOWED_DATES
+                ) ||
+                ALLOWED_DATES.length ===
+                0
+            ) {
+
+                ALLOWED_DATES =
+                    Array.isArray(
+                        festivalDays
+                    )
+
+                        ? festivalDays
+                            .map(
+                                day =>
+                                    day?.dateISO
+                            )
+                            .filter(
+                                Boolean
+                            )
+                            .sort()
+
+                        : [];
+
+            }
+
+
+            /* =================================================
+               ARTISTS
+            ================================================= */
+
+            const artists =
+                getAllArtists();
+
+
+            if (
+                !Array.isArray(
+                    artists
+                ) ||
+                artists.length ===
+                0
+            ) {
+
+                throw new Error(
+                    "Excel โหลดสำเร็จ แต่ไม่พบ Artist Data"
+                );
+
+            }
+
+
+            /* =================================================
+               INITIAL SELECTED DATE
+            ================================================= */
+
+            initializeSelectedDate();
+
+
+            /* =================================================
+               RESET STATE
+            ================================================= */
+
+            RENDER_STATE.filtersRendered =
+                false;
+
+            RENDER_STATE.initialized =
+                false;
+
+
+            resetRenderSignatures();
+
+
+            /* =================================================
+               LOAD SAVED ARTISTS
+            ================================================= */
+
+            loadSelectedArtists();
+
+
+            /* =================================================
+               THEME
+            ================================================= */
+
+            applyTheme();
+
+
+            /* =================================================
+               TRANSITION
+            ================================================= */
+
+            injectTransitionStyles();
+
+
+            /* =================================================
+               REALTIME RESIZE
+            ================================================= */
+
+            setupRealtimeResize();
+
+
+            /* =================================================
+               SYSTEM LOG
+            ================================================= */
+
+            console.log(
+                "🚀 Melody Of Life 17 Planner"
+            );
+
+
+            console.log(
+                "Environment:",
+                APP_ENV
+            );
+
+
+            console.log(
+                "Artists:",
+                artists.length
+            );
+
+
+            console.log(
+                "Dates:",
+                ALLOWED_DATES
+            );
+
+
+            console.log(
+                "Selected Date:",
+                selectedDate
+            );
+
+
+            console.log(
+                "Stages:",
+                getStages()
+            );
+
+
+            /* =================================================
+               VALIDATION
+            ================================================= */
+
+            const valid =
+                validateArtistData();
+
+
+            console.log(
+                valid
+                    ? "✅ Artist / Stage validation ผ่าน"
+                    : "⚠️ พบปัญหาใน Artist / Stage Data"
+            );
+
+
+            debugStageConfig();
+
+
+            debugSimulationConfig();
+
+
+            /* =================================================
+               SIMULATION
+            ================================================= */
+
+            initializeSimulationInputs();
+
+
+            /* =================================================
+               EVENTS
+            ================================================= */
+
+            setupEvents();
+
+
+            /* =================================================
+               INITIAL RENDER
+            ================================================= */
+
+            renderApp({
+
+                transition:
+                    false,
+
+                force:
+                    true,
+
+                renderFilters:
+                    true
+
+            });
+
+
+            /* =================================================
+               PAGE REFRESH TRANSITION
+               ครั้งเดียว
+            ================================================= */
+
+            requestAnimationFrame(
+                () => {
+
+                    requestAnimationFrame(
+                        () => {
+
+                            playPageRefreshTransition();
+
+                        }
+                    );
+
+                }
+            );
+
+
+            /* =================================================
+               REALTIME LOOP
+            ================================================= */
+
+            startRealtimeLoop();
+
+
+            /* =================================================
+               READY
+            ================================================= */
+
+            console.log(
+                "✅ Melody Of Life 17 Planner พร้อมใช้งาน"
+            );
+
+        }
+        catch (
+        error
+        ) {
+
+            console.error(
+                "❌ Melody Of Life 17 Planner เริ่มระบบไม่สำเร็จ:",
+                error
+            );
+
+        }
+
+    }
+);
