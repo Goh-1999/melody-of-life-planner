@@ -1,6 +1,6 @@
 /* =========================================================
    Melody Of Life 17 Planner
-   app.js
+   Production app.js
    ========================================================= */
 
 
@@ -140,6 +140,7 @@ function validateArtistData() {
                 timeToMinutes(
                     artist.start
                 );
+
 
             const end =
                 timeToMinutes(
@@ -282,6 +283,7 @@ function debugStageConfig() {
 
 }
 
+
 /* =========================================================
    RESET RENDER SIGNATURES
 ========================================================= */
@@ -304,6 +306,19 @@ function resetRenderSignatures() {
 
 
 /* =========================================================
+   REALTIME AUTO DATE STATE
+   ---------------------------------------------------------
+   realtimeAutoDate:
+   - วันที่ที่ระบบเลือกให้อัตโนมัติ
+   - ใช้ป้องกันการบังคับ Day กลับ
+     หลังผู้ใช้เลือกวันอื่นเอง
+========================================================= */
+
+let realtimeAutoDate =
+    null;
+
+
+/* =========================================================
    INITIAL SELECTED DATE
 ========================================================= */
 
@@ -321,6 +336,7 @@ function initializeSelectedDate() {
         ALLOWED_DATES.length - 1
         ] ||
         "2026-10-18";
+
 
     /* =====================================================
        PRODUCTION / REAL TIME
@@ -354,6 +370,11 @@ function initializeSelectedDate() {
         selectedDate =
             currentFestivalDate;
 
+
+        realtimeAutoDate =
+            currentFestivalDate;
+
+
         return;
 
     }
@@ -384,6 +405,11 @@ function initializeSelectedDate() {
         selectedDate =
             festivalStart;
 
+
+        realtimeAutoDate =
+            festivalStart;
+
+
         return;
 
     }
@@ -396,12 +422,21 @@ function initializeSelectedDate() {
         selectedDate =
             safeDates[0];
 
+
+        realtimeAutoDate =
+            safeDates[0];
+
+
         return;
 
     }
 
 
     selectedDate =
+        festivalEnd;
+
+
+    realtimeAutoDate =
         festivalEnd;
 
 }
@@ -512,23 +547,32 @@ function renderStaticUI(
 
 }
 
+
+/* =========================================================
+   DYNAMIC RENDER
+========================================================= */
+
 function renderDynamicUI(
     force = false
 ) {
 
     updateClock();
 
+
     renderArtists(
         force
     );
+
 
     renderNowPlaying(
         force
     );
 
+
     renderSchedule(
         force
     );
+
 
     renderConflictWarning();
 
@@ -620,8 +664,6 @@ function refreshAll(
 
 /* =========================================================
    REALTIME CLOCK
-   ---------------------------------------------------------
-   Clock ยังอัปเดตตามปกติ
 ========================================================= */
 
 function updateRealtimeClockOnly() {
@@ -637,8 +679,15 @@ function updateRealtimeClockOnly() {
 
 }
 
+
 /* =========================================================
    SYNC FESTIVAL DATE WITH REAL TIME
+   ---------------------------------------------------------
+   Auto Day:
+   - ถ้าผู้ใช้ยังอยู่บนวันที่ที่ระบบ Auto เลือกไว้
+     ให้เปลี่ยนตามวันจริง
+   - ถ้าผู้ใช้เลือกวันอื่นเอง
+     จะไม่บังคับเปลี่ยนกลับ
 ========================================================= */
 
 function syncRealtimeFestivalDate() {
@@ -672,8 +721,28 @@ function syncRealtimeFestivalDate() {
     }
 
 
+    /* =====================================================
+       USER SELECTED ANOTHER DAY
+       → Do not override it
+    ===================================================== */
+
     if (
-        selectedDate ===
+        selectedDate !==
+        realtimeAutoDate
+    ) {
+
+        return false;
+
+    }
+
+
+    /* =====================================================
+       SAME AUTO DATE
+       → Nothing to change
+    ===================================================== */
+
+    if (
+        realtimeAutoDate ===
         currentFestivalDate
     ) {
 
@@ -682,7 +751,15 @@ function syncRealtimeFestivalDate() {
     }
 
 
+    /* =====================================================
+       CHANGE TO CURRENT FESTIVAL DATE
+    ===================================================== */
+
     selectedDate =
+        currentFestivalDate;
+
+
+    realtimeAutoDate =
         currentFestivalDate;
 
 
@@ -697,6 +774,11 @@ function syncRealtimeFestivalDate() {
 
 }
 
+
+/* =========================================================
+   REALTIME UPDATE
+========================================================= */
+
 function updateRealtimeUI() {
 
     /* =====================================================
@@ -704,6 +786,7 @@ function updateRealtimeUI() {
     ===================================================== */
 
     updateRealtimeClockOnly();
+
 
     /* =====================================================
        ARTIST CARDS
@@ -761,10 +844,6 @@ let realtimeInterval =
    START REALTIME LOOP
 ========================================================= */
 
-/* =========================================================
-   START REALTIME LOOP
-========================================================= */
-
 function startRealtimeLoop() {
 
     if (
@@ -802,6 +881,7 @@ function startRealtimeLoop() {
 
                     });
 
+
                     return;
 
                 }
@@ -819,6 +899,7 @@ function startRealtimeLoop() {
     );
 
 }
+
 
 /* =========================================================
    STOP REALTIME LOOP
@@ -871,6 +952,7 @@ function setupEvents() {
                     event.currentTarget
                 );
 
+
                 clearSelection();
 
             }
@@ -895,6 +977,7 @@ function setupEvents() {
     setupPopupEvents();
 
 }
+
 
 /* =========================================================
    APPLICATION INITIALIZATION
@@ -1014,6 +1097,7 @@ document.addEventListener(
             RENDER_STATE.filtersRendered =
                 false;
 
+
             RENDER_STATE.initialized =
                 false;
 
@@ -1083,6 +1167,12 @@ document.addEventListener(
 
 
             console.log(
+                "Realtime Auto Date:",
+                realtimeAutoDate
+            );
+
+
+            console.log(
                 "Stages:",
                 getStages()
             );
@@ -1103,7 +1193,8 @@ document.addEventListener(
             );
 
 
-            debugStageConfig();;
+            debugStageConfig();
+
 
             /* =================================================
                EVENTS
