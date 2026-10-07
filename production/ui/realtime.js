@@ -530,3 +530,72 @@ function setupRealtimeResize() {
     );
 
 }
+/* =========================================================
+   REALTIME CLOCK TIMER
+========================================================= */
+
+let realtimeClockTimer = null;
+
+
+function startRealtimeClock() {
+
+    if (
+        realtimeClockTimer !== null
+    ) {
+
+        window.clearInterval(
+            realtimeClockTimer
+        );
+
+    }
+
+
+    updateClock();
+
+
+    realtimeClockTimer =
+        window.setInterval(
+            () => {
+
+                updateClock();
+
+                if (
+                    typeof updateRealtimeUI ===
+                    "function"
+                ) {
+
+                    updateRealtimeUI();
+
+                }
+
+            },
+            1000
+        );
+
+}
+
+
+function stopRealtimeClock() {
+
+    if (
+        realtimeClockTimer !== null
+    ) {
+
+        window.clearInterval(
+            realtimeClockTimer
+        );
+
+
+        realtimeClockTimer =
+            null;
+
+    }
+
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+startRealtimeClock();

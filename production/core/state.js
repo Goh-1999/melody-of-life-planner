@@ -81,9 +81,7 @@ let selectedArtistIds =
 ========================================================= */
 
 let simulationEnabled =
-    Boolean(
-        SIMULATION_CONFIG.enabled
-    );
+    false;
 
 
 let simulationPlaying =
