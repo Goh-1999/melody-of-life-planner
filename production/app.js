@@ -282,53 +282,6 @@ function debugStageConfig() {
 
 }
 
-
-/* =========================================================
-   DEBUG SIMULATION
-========================================================= */
-
-function debugSimulationConfig() {
-
-    console.group(
-        "🧪 Simulation"
-    );
-
-
-    console.log(
-        "Environment:",
-        APP_ENV
-    );
-
-
-    console.log(
-        "Enabled:",
-        simulationEnabled
-    );
-
-
-    console.log(
-        "Date:",
-        simulationDate
-    );
-
-
-    console.log(
-        "Time:",
-        simulationTime
-    );
-
-
-    console.log(
-        "Speed:",
-        simulationSpeed
-    );
-
-
-    console.groupEnd();
-
-}
-
-
 /* =========================================================
    RESET RENDER SIGNATURES
 ========================================================= */
@@ -576,43 +529,25 @@ function renderStaticUI(
 
 }
 
-
-/* =========================================================
-   DYNAMIC RENDER
-   ---------------------------------------------------------
-   ใช้ตอน Render จริงเท่านั้น
-   ไม่ใช้ใน realtime loop
-========================================================= */
-
 function renderDynamicUI(
     force = false
 ) {
 
     updateClock();
 
-
     renderArtists(
         force
     );
-
 
     renderNowPlaying(
         force
     );
 
-
     renderSchedule(
         force
     );
 
-
     renderConflictWarning();
-
-
-    updateSimulationDisplay();
-
-
-    updateSimulationButtons();
 
 }
 
@@ -902,103 +837,6 @@ function stopRealtimeLoop() {
 function setupEvents() {
 
     /* -----------------------------------------------------
-       SIMULATION APPLY
-    ----------------------------------------------------- */
-
-    $("#applySimulationButton")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                playButtonPress(
-                    event.currentTarget
-                );
-
-
-                applySimulation();
-
-            }
-        );
-
-
-    /* -----------------------------------------------------
-       SIMULATION PLAY
-    ----------------------------------------------------- */
-
-    $("#playSimulationButton")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                playButtonPress(
-                    event.currentTarget
-                );
-
-
-                playSimulation();
-
-            }
-        );
-
-
-    /* -----------------------------------------------------
-       SIMULATION PAUSE
-    ----------------------------------------------------- */
-
-    $("#pauseSimulationButton")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                playButtonPress(
-                    event.currentTarget
-                );
-
-
-                pauseSimulation();
-
-            }
-        );
-
-
-    /* -----------------------------------------------------
-       SIMULATION RESET
-    ----------------------------------------------------- */
-
-    $("#resetSimulationButton")
-        ?.addEventListener(
-            "click",
-            event => {
-
-                playButtonPress(
-                    event.currentTarget
-                );
-
-
-                resetSimulation();
-
-            }
-        );
-
-
-    /* -----------------------------------------------------
-       SIMULATION SPEED
-    ----------------------------------------------------- */
-
-    $("#simulationSpeed")
-        ?.addEventListener(
-            "change",
-            event => {
-
-                changeSimulationSpeed(
-                    event.target.value
-                );
-
-            }
-        );
-
-
-    /* -----------------------------------------------------
        CLEAR SELECTION
     ----------------------------------------------------- */
 
@@ -1010,7 +848,6 @@ function setupEvents() {
                 playButtonPress(
                     event.currentTarget
                 );
-
 
                 clearSelection();
 
@@ -1036,37 +873,6 @@ function setupEvents() {
     setupPopupEvents();
 
 }
-
-
-/* =========================================================
-   INITIALIZE SIMULATION INPUTS
-========================================================= */
-
-function initializeSimulationInputs() {
-
-    const dateInput =
-        $("#simulationDate");
-
-
-    if (
-        dateInput
-    ) {
-
-        dateInput.min =
-            FESTIVAL.startDate ||
-            "";
-
-        dateInput.max =
-            FESTIVAL.endDate ||
-            "";
-
-    }
-
-
-    syncSimulationInputs();
-
-}
-
 
 /* =========================================================
    APPLICATION INITIALIZATION
@@ -1275,18 +1081,7 @@ document.addEventListener(
             );
 
 
-            debugStageConfig();
-
-
-            debugSimulationConfig();
-
-
-            /* =================================================
-               SIMULATION
-            ================================================= */
-
-            initializeSimulationInputs();
-
+            debugStageConfig();;
 
             /* =================================================
                EVENTS
