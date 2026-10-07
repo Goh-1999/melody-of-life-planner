@@ -38,7 +38,7 @@
  */
 
 const ARTIST_EXCEL_FILE =
-    "../data/MelodyOfLife17Lineup.xlsx";
+    "data/MelodyOfLife17Lineup.xlsx";
 
 
 let artistData = [];
